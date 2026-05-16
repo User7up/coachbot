@@ -18,7 +18,7 @@ LEAGUES=[
 
 def load_tournaments():
     try:
-        with open("/Users/user/tournaments.txt") as f:
+        with open("tournaments.txt") as f:
             urls=[l.strip() for l in f if l.strip() and l.startswith("http")]
         return [{"name":f"Tournament {i+1}","url":u} for i,u in enumerate(urls)]
     except:
@@ -67,7 +67,7 @@ try:
 except:
     pass
 
-print("CoachBot running — texts to 3167060420")
+print("CoachBot running — sending email alerts")
 n=0
 while True:
     n+=1
