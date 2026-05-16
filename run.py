@@ -91,7 +91,7 @@ while True:
                 print(f"  OK: {s['name']}")
         else:
             print(f"  FAIL: {s['name']}")
-    with open("/Users/user/st.json","w") as f:
+    with open("st.json","w") as f:
         json.dump(st,f)
     print(f"  Next: {datetime.fromtimestamp(time.time()+INT).strftime('%I:%M %p')}")
     time.sleep(INT)
