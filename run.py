@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from bs4 import BeautifulSoup
 
 COACH_EMAIL="shox1539@gmail.com"
-COACH_TEXT="3167060420@txt.att.net"
+COACH_TEXT="shox1539@gmail.com"
 GMAIL_PASS="adwa ckpi yahz cvax"
 INT=300
 
