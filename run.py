@@ -55,8 +55,8 @@ def send_text(name,url,changes):
     msg["Subject"]=""
     msg["From"]=COACH_EMAIL
     msg["To"]=COACH_TEXT
-    with smtplib.SMTP_SSL("smtp.gmail.com",465) as s:
-        s.login(COACH_EMAIL,GMAIL_PASS)
+    with smtplib.SMTP("smtp.gmail.com",587) as s:
+        s.starttls(); s.login(COACH_EMAIL,GMAIL_PASS)
         s.sendmail(COACH_EMAIL,COACH_TEXT,msg.as_string())
     print(f"  TEXT SENT: {name}")
 
