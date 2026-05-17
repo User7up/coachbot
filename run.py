@@ -5,22 +5,21 @@ from email.mime.multipart import MIMEMultipart
 from bs4 import BeautifulSoup
 
 COACH_EMAIL="shox1539@gmail.com"
-COACH_TEXT="shox1539@gmail.com"
 GMAIL_PASS="adwa ckpi yahz cvax"
 INT=300
 
 LEAGUES=[
-{"name":"Westurban Statusfy","url":"https://statusfy.com/3162413484"},
-{"name":"SW Boys Club Statusfy","url":"https://statusfy.com/6206204483"},
-{"name":"11U Lions Schedule (Westurban)","url":"https://www.allprosoftware.net/westurbanhighschool/aplsteam1555.htm"},
-{"name":"10U Lions Schedule (SW Boys Club)","url":"https://www.allprosoftware.net/swbcleague26/aplsteam1576.htm"},
+{"name":"Westurban Statusfy","team":"11U Lions","url":"https://statusfy.com/3162413484"},
+{"name":"SW Boys Club Statusfy","team":"10U Lions","url":"https://statusfy.com/6206204483"},
+{"name":"11U Lions Schedule","team":"11U Lions","url":"https://www.allprosoftware.net/westurbanhighschool/aplsteam1555.htm"},
+{"name":"10U Lions Schedule","team":"10U Lions","url":"https://www.allprosoftware.net/swbcleague26/aplsteam1576.htm"},
 ]
 
 def load_tournaments():
     try:
         with open("tournaments.txt") as f:
             urls=[l.strip() for l in f if l.strip() and l.startswith("http")]
-        return [{"name":f"Tournament {i+1}","url":u} for i,u in enumerate(urls)]
+        return [{"name":f"Tournament","team":"Lions","url":u} for u in urls]
     except:
         return []
 
@@ -43,22 +42,46 @@ def get_diff(old,new):
     added=[l[1:] for l in difflib.unified_diff(old_lines,new_lines,lineterm="",n=0) if l.startswith("+") and not l.startswith("+++")]
     parts=[]
     if removed:
-        parts.append("REMOVED:\n"+"\n".join(f"- {l}" for l in removed[:5]))
+        parts.append("REMOVED:\n"+"\n".join(f"  - {l}" for l in removed[:10]))
     if added:
-        parts.append("ADDED:\n"+"\n".join(f"+ {l}" for l in added[:5]))
+        parts.append("ADDED:\n"+"\n".join(f"  + {l}" for l in added[:10]))
     return "\n\n".join(parts) if parts else "Content changed"
 
-def send_text(name,url,changes):
-    now=datetime.now().strftime("%a %b %d %I:%M %p")
-    body=f"CoachBot: {name}\n{now}\n\n{changes}\n\n{url}"
-    msg=MIMEText(body,"plain")
-    msg["Subject"]=""
+def send_email(source,changes):
+    now=datetime.now().strftime("%A %b %d, %I:%M %p")
+    body=f"""
+⚾ COACHBOT SCHEDULE ALERT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Team:    {source['team']}
+Source:  {source['name']}
+Time:    {now}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT CHANGED:
+{changes}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DRAFT MESSAGE TO PARENTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Hey Lions families — heads up, there has been a 
+schedule change posted for {source['team']}. 
+Please check the league website to confirm your 
+next game details and update your calendars.
+
+- Coach
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Verify at: {source['url']}
+"""
+    msg=MIMEMultipart()
+    msg["Subject"]=f"⚾ CoachBot: {source['team']} schedule changed"
     msg["From"]=COACH_EMAIL
-    msg["To"]=COACH_TEXT
+    msg["To"]=COACH_EMAIL
+    msg.attach(MIMEText(body,"plain"))
     with smtplib.SMTP("smtp.gmail.com",587) as s:
-        s.starttls(); s.login(COACH_EMAIL,GMAIL_PASS)
-        s.sendmail(COACH_EMAIL,COACH_TEXT,msg.as_string())
-    print(f"  TEXT SENT: {name}")
+        s.starttls()
+        s.login(COACH_EMAIL,GMAIL_PASS)
+        s.sendmail(COACH_EMAIL,COACH_EMAIL,msg.as_string())
+    print(f"  EMAIL SENT: {source['name']}")
 
 st={}
 try:
@@ -85,7 +108,7 @@ while True:
             elif st[k]["hash"]!=h:
                 print(f"  CHANGE: {s['name']}")
                 changes=get_diff(st[k]["text"],text)
-                send_text(s["name"],s["url"],changes)
+                send_email(s,changes)
                 st[k]={"hash":h,"text":text}
             else:
                 print(f"  OK: {s['name']}")
